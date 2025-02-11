@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+python-dotenv
+cryptography
+PyMuPDF
+python-docx
+pandas
+whoosh
+openai
+faiss-cpu
