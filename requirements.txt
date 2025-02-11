@@ -2,9 +2,12 @@ fastapi
 uvicorn
 python-dotenv
 cryptography
-PyMuPDF
+pymupdf
 python-docx
 pandas
 whoosh
 openai
 faiss-cpu
+python-multipart
+pycryptodome
+cryptography
