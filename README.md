@@ -1,3 +1,4 @@
+
 # Cognisync - AI Data Bridge
 
 Cognisync is an AI-powered data asset bridge that enables seamless interaction between enterprise data and AI models. This system ensures secure encrypted storage, intelligent data processing, AI-driven queries, and irreversible secure data destruction.
