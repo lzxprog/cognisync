@@ -1,7 +1,11 @@
+<div align="center">
+  <img src="./logo.png" width="30%" alt="cognisync" />
+</div>
+<hr>
 
-# Cognisync - AI Data Bridge
+# cognisync - AI Data Bridge!
 
-Cognisync is an AI-powered data asset bridge that enables seamless interaction between enterprise data and AI models. This system ensures secure encrypted storage, intelligent data processing, AI-driven queries, and irreversible secure data destruction.
+cognisync is an AI-powered data asset bridge that enables seamless interaction between enterprise data and AI models. This system ensures secure encrypted storage, intelligent data processing, AI-driven queries, and irreversible secure data destruction.
 
 ## 🚀 Features
 - **Secure Data Upload**: Automatically encrypts files using AES-256-GCM and binds them to a unique device ID.
@@ -13,27 +17,26 @@ Cognisync is an AI-powered data asset bridge that enables seamless interaction b
 ## 📁 Project Structure
 ```
 Cognisync/
-│── main.py                # FastAPI entry point
-│── config.py              # Configuration file
-│── requirements.txt       # Dependency list
-│── .env                   # API keys and environment variables
+Cognisync/
+│── main.py                # FastAPI 主入口文件，启动应用并注册路由
+│── config.py              # 配置文件，包含文件路径、FAISS 索引路径等设置
+│── requirements.txt       # 依赖库清单文件
+│── .env                   # 环境变量（如 OpenAI API 密钥等）
+
+├── routes/                # API 路由
+│   ├── upload.py          # 处理文件上传并生成文档摘要和分类
+│   ├── query.py           # 处理用户查询，返回基于文档的答案
 │
-├── routes/                # API endpoints
-│   ├── upload.py          # Handles file uploads
-│   ├── query.py           # AI querying
-│   ├── destroy.py         # Secure deletion
+├── utils/                 # 工具类和模块
+│   ├── llm.py             # 与 GPT-3 或 T5 进行交互，生成答案
+│   ├── text_processing.py # 文本提取和处理工具（如 docx 文件内容提取）
+│   ├── search.py          # FAISS 索引和查询相关文档的工具
 │
-├── utils/                 # Utility modules
-│   ├── encryption.py      # AES encryption & device binding
-│   ├── text_processing.py # Text extraction & preprocessing
-│   ├── search.py          # Search & AI processing
-│   ├── secure_delete.py   # Secure wiping
+├── data_storage/          # 存储上传文件和 FAISS 索引
+│   ├── files/             # 保存上传的文档文件
+│   ├── faiss_index/       # 存储 FAISS 索引文件
 │
-├── data_storage/          # Encrypted data storage
-│
-├── logs/                  # AI query logs
-│
-└── README.md              # Project documentation
+└── README.md              # 项目说明文档
 ```
 
 ## 🔧 Installation

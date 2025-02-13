@@ -1,72 +1,68 @@
-import logging
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, File, UploadFile, HTTPException
+from pathlib import Path
 import os
-import docx
-import jieba
-from utils.encryption import encrypt_data, get_device_id
-from config import DATA_STORAGE
-
-# ✅ 配置日志
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+import faiss
+import numpy as np
+from utils.sentence_model import get_model, encode_text  # 从 sentence_model 中导入相关功能
+from utils.text_processing import extract_text_from_pdf, extract_text_from_docx  # 支持提取 PDF 和 DOCX 文件文本
+from config import FILES_PATH, FAISS_INDEX_PATH
+from typing import List
 
 router = APIRouter()
 
-# 定义本地知识库文件
-KNOWLEDGE_BASE_FILE = os.path.join(DATA_STORAGE, "knowledge_base.enc")
+# 获取已加载的模型
+model = get_model()
 
+# 确保文件存储目录存在
+Path(FILES_PATH).mkdir(parents=True, exist_ok=True)
 
-def extract_text_from_docx(file_bytes):
-    """从 DOCX 文件提取所有文本内容"""
+# 初始化 FAISS 索引
+index = faiss.IndexFlatL2(384)  # 384是模型输出的向量维度
+
+# 将 FAISS 索引保存到文件
+def save_faiss_index(index: faiss.Index, index_path: str):
     try:
-        with open("temp.docx", "wb") as temp_file:
-            temp_file.write(file_bytes)
-        doc = docx.Document("temp.docx")
-        os.remove("temp.docx")  # 删除临时文件
-        return "\n".join([para.text for para in doc.paragraphs])
+        faiss.write_index(index, index_path)
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Failed to extract text from DOCX: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error saving FAISS index: {str(e)}")
 
+# 加载 FAISS 索引
+def load_faiss_index(index_path: str) -> faiss.Index:
+    try:
+        return faiss.read_index(index_path)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error loading FAISS index: {str(e)}")
 
-def tokenize_text(text):
-    """对文本进行分词"""
-    return " ".join(jieba.cut(text))
-
-
-@router.post("/")
+# 上传文件并处理
+@router.post("/upload")
 async def upload_file(file: UploadFile = File(...)):
     try:
-        # 读取文件内容（保持二进制）
-        file_bytes = await file.read()
+        # 获取文件保存路径
+        file_path = os.path.join(FILES_PATH, file.filename)
 
-        # 解析 DOCX 文件文本
-        file_text = extract_text_from_docx(file_bytes)
+        # 保存文件到本地
+        with open(file_path, "wb") as f:
+            f.write(await file.read())
 
-        logger.info("1")
-        # 生成设备密钥
-        device_key = get_device_id()
-        logger.info("2")
-        # 进行分词处理
-        tokenized_text = tokenize_text(file_text)
-        logger.info("3")
-
-        # 加载现有的知识库
-        if os.path.exists(KNOWLEDGE_BASE_FILE):
-            with open(KNOWLEDGE_BASE_FILE, "r", encoding="utf-8") as f:
-                existing_data = f.read()
+        # 提取文件内容
+        file_content = ""
+        if file.filename.endswith(".pdf"):
+            file_content = extract_text_from_pdf(file_path)
+        elif file.filename.endswith(".docx"):
+            file_content = extract_text_from_docx(file_path)
         else:
-            existing_data = ""
+            raise HTTPException(status_code=400, detail="Unsupported file type. Only PDF and DOCX are supported.")
 
-        # 追加新数据
-        updated_data = existing_data + "\n" + tokenized_text
+        # 使用 Sentence-BERT 生成文档向量
+        doc_vector = encode_text(model, file_content)
 
-        # 加密并存储知识库
-        encrypted_data = encrypt_data(updated_data, device_key)
-        with open(KNOWLEDGE_BASE_FILE, "w", encoding="utf-8") as f:
-            f.write(encrypted_data)
+        # 将文档向量添加到 FAISS 索引
+        index.add(np.array([doc_vector], dtype='float32'))
 
-        logger.info("4 - Knowledge base updated.")
+        # 保存 FAISS 索引
+        save_faiss_index(index, FAISS_INDEX_PATH)
 
-        return {"message": "File uploaded, processed, and added to knowledge base", "file": file.filename}
+        return {"message": "File uploaded and processed successfully."}
+
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"File upload failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error uploading file: {str(e)}")
