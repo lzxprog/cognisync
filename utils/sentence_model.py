@@ -1,5 +1,4 @@
 from sentence_transformers import SentenceTransformer
-import os
 
 # 本地模型路径
 LOCAL_MODEL_PATH = './local_model'

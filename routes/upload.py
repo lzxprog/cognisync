@@ -7,6 +7,8 @@ from fastapi import APIRouter, UploadFile, File, HTTPException
 from config import FILES_PATH, FAISS_INDEX_PATH
 import logging
 from utils.sentence_model import get_model, encode_text  # 引入模型加载和编码方法
+from utils.text_processing import extract_text_from_file  # 引入提取文件内容的方法
+from io import BytesIO
 
 # 初始化上传路由
 router = APIRouter()
@@ -44,12 +46,6 @@ def calculate_md5(file: UploadFile) -> str:
     return hash_md5.hexdigest()
 
 
-# 读取文件内容并转化为文本（假设是文本文件）
-async def read_file_content(file: UploadFile) -> str:
-    content = await file.read()
-    return content.decode("utf-8")  # 假设文件内容为 UTF-8 编码的文本
-
-
 # 上传文件并更新映射
 @router.post("/upload")
 async def upload_file(file: UploadFile = File(...)):
@@ -58,7 +54,7 @@ async def upload_file(file: UploadFile = File(...)):
         file_md5 = calculate_md5(file)
 
         # 如果文件的 MD5 值已经在 map 中，则认为文件已上传
-        if file_md5 in file_id_map:
+        if file_md5 in file_path_map:
             return {"message": "File already uploaded", "file_md5": file_md5}
 
         # 获取文件保存路径
@@ -77,8 +73,10 @@ async def upload_file(file: UploadFile = File(...)):
         # 获取 Sentence-BERT 模型
         model = get_model()
 
-        # 读取文件内容并生成文本向量
-        file_content = await read_file_content(file)
+        # 将上传的文件内容转换为 BytesIO 对象，以便传递给 extract_text_from_file
+        file_content = await extract_text_from_file(file)  # 提取文件内容
+
+        # 生成文件的文本向量
         file_vector = np.array(encode_text(model, file_content), dtype=np.float32)  # 获取文件向量
 
         # 将文件向量添加到 FAISS 索引

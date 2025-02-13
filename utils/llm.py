@@ -1,3 +1,5 @@
+import logging
+
 import openai
 from config import OPENAI_API_KEY  # 从配置文件中导入 API 密钥
 
@@ -8,23 +10,27 @@ BASE_URL = "https://api.deepseek.com"  # 可以设置为自定义的 URL
 openai.api_key = OPENAI_API_KEY
 openai.api_base = BASE_URL  # 设置 base_url
 
-def call_llm(query: str, relevant_doc_content: str, model_name="deepseek-chat", system_message="You are a helpful assistant.", custom_messages=None) -> str:
+# 配置日志
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger(__name__)
+
+def call_llm(query: str, relevant_doc_content: str) -> str:
     """调用 OpenAI LLM 处理查询，支持自定义消息"""
+    logging.info(f"Calling LLM with query: {query}")
+    logging.info(f"Relevant document content: {relevant_doc_content}")
     try:
-        # 如果没有提供自定义的 messages，就使用默认的
-        if custom_messages is None:
-            custom_messages = [
-                {"role": "system", "content": system_message},
-                {"role": "user", "content": f"Document: {relevant_doc_content}"},
-                {"role": "user", "content": f"Question: {query}"}
-            ]
+        custom_messages = [
+            {"role": "system", "content": "You are a helpful assistant who answers questions based on the content of the provided documents."},
+            {"role": "user", "content": f"Document: {relevant_doc_content}"},
+            {"role": "user", "content": f"Question: {query}"}
+        ]
 
         # 调用 OpenAI API 生成回答
         response = openai.ChatCompletion.create(
-            model=model_name,  # 使用传入的模型名称
+            model="deepseek-chat",  # 使用传入的模型名称
             messages=custom_messages,  # 使用自定义的消息
             temperature=0.7,  # 设置生成文本的随机性
-            max_tokens=100  # 设置回答的最大长度
+            max_tokens=512  # 设置回答的最大长度
         )
 
         # 检查响应
