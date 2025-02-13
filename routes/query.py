@@ -1,17 +1,15 @@
 from fastapi import APIRouter, HTTPException
-from utils.llm import call_llm  # 改为 call_llm 来支持更多模型
-from utils.search import search_in_faiss, load_faiss_index
-from utils.sentence_model import get_model, encode_text  # 从 sentence_model 中导入相关功能
-from utils.text_processing import extract_text_from_pdf, extract_text_from_docx  # 支持多格式文件
-from config import SIMILARITY_THRESHOLD, FAISS_INDEX_PATH, FILES_PATH
-import numpy as np
+from routes.upload import file_id_map, file_path_map  # 从 upload.py 导入映射
+from utils.llm import call_llm  # 引入 LLM 调用函数
+from config import FAISS_INDEX_PATH
 import faiss
-from typing import List
+import numpy as np
+import logging
 
+from utils.sentence_model import get_model, encode_text
+
+# 创建查询路由
 router = APIRouter()
-
-# 获取已加载的模型
-model = get_model()
 
 # 加载 FAISS 索引
 def load_faiss_index_from_disk() -> faiss.Index:
@@ -19,51 +17,63 @@ def load_faiss_index_from_disk() -> faiss.Index:
         index = faiss.read_index(FAISS_INDEX_PATH)
         return index
     except Exception as e:
+        logging.error(f"Error loading FAISS index: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error loading FAISS index: {str(e)}")
 
-# 获取相关文档内容
-def get_relevant_documents(index: faiss.Index, query: str, k: int = 3) -> List[str]:
+# 读取文件内容并转化为文本（假设是文本文件）
+def read_file_content(file_path: str) -> str:
     try:
-        # 将查询转化为向量
-        query_vector = encode_text(model, query)
-
-        # 使用 FAISS 进行检索
-        D, I = index.search(np.array([query_vector], dtype='float32'), k)
-
-        # 筛选相关文档
-        relevant_docs = []
-        for i, dist in zip(I[0], D[0]):
-            if dist < SIMILARITY_THRESHOLD:
-                break
-            # 提取文档内容
-            doc_path = f"{FILES_PATH}/document_{i}.pdf"  # 根据索引获取文档路径
-            relevant_doc_content = extract_text_from_pdf(doc_path) if doc_path.endswith(".pdf") else extract_text_from_docx(doc_path)
-            relevant_docs.append(relevant_doc_content)
-
-        return relevant_docs
-
+        with open(file_path, "r", encoding="utf-8") as file:
+            return file.read()
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error retrieving relevant documents: {str(e)}")
+        logging.error(f"Error reading file {file_path}: {str(e)}")
+        return ""
 
-# 查询处理接口
+# 查询接口
 @router.post("/query")
 async def query(query: str, k: int = 3):
     try:
         # 加载 FAISS 索引
         faiss_index = load_faiss_index_from_disk()
 
-        # 获取相关文档
-        relevant_docs = get_relevant_documents(faiss_index, query, k)
+        # 获取 Sentence-BERT 模型
+        model = get_model()
+
+        # 将查询转化为向量
+        query_vector = np.array(encode_text(model, query), dtype=np.float32)
+
+        # 使用 FAISS 进行检索
+        D, I = faiss_index.search(query_vector.reshape(1, -1), k)  # FAISS 要求输入是二维数组
+
+        # 获取相关文档路径
+        relevant_docs = []
+        for i in range(k):
+            doc_id = I[0][i]
+            # 获取文件的 MD5
+            file_md5 = file_id_map.get(doc_id)
+            if file_md5:
+                # 使用 MD5 获取文件路径
+                file_path = file_path_map.get(file_md5)
+                if file_path:
+                    relevant_docs.append(file_path)
+                else:
+                    logging.warning(f"No file path found for MD5 {file_md5}")
+            else:
+                logging.warning(f"No file ID found for FAISS ID {doc_id}")
 
         if not relevant_docs:
             raise HTTPException(status_code=404, detail="No relevant documents found.")
 
-        # 使用 LLM 生成答案
-        answer = call_llm(query, " ".join(relevant_docs))
+        # 读取所有相关文件的内容并合并
+        documents_content = ""
+        for file_path in relevant_docs:
+            file_content = read_file_content(file_path)
+            documents_content += file_content + "\n"  # 合并文件内容
+
+        # 调用 LLM 生成答案
+        answer = call_llm(query, documents_content)
 
         return {"answer": answer, "relevant_documents": relevant_docs}
 
-    except HTTPException as e:
-        raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing query: {str(e)}")

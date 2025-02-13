@@ -16,8 +16,8 @@ cognisync is an AI-powered data asset bridge that enables seamless interaction b
 
 ## 📁 Project Structure
 ```
-Cognisync/
-Cognisync/
+cognisync/
+cognisync/
 │── main.py                # FastAPI 主入口文件，启动应用并注册路由
 │── config.py              # 配置文件，包含文件路径、FAISS 索引路径等设置
 │── requirements.txt       # 依赖库清单文件
@@ -80,4 +80,4 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000
 🔜 Implement `/destroy` API for secure deletion
 
 ---
-### 🚀 Cognisync: Bridging AI & Enterprise Data Securely
+### 🚀 cognisync: Bridging AI & Enterprise Data Securely

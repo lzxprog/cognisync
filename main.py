@@ -20,8 +20,8 @@ else:
     logger.info("Running in default mode")
 
 # 添加 API 路由
-app.include_router(upload.router, prefix="/upload", tags=["File Upload"])
-app.include_router(query.router, prefix="/query", tags=["AI Querying"])
+app.include_router(upload.router, tags=["File Upload"])
+app.include_router(query.router,  tags=["AI Querying"])
 
 # 首页测试路由
 @app.get("/")
@@ -31,4 +31,4 @@ def read_root():
 # 启动 FastAPI 应用
 if __name__ == "__main__":
     logger.info("Starting the application...")
-    uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

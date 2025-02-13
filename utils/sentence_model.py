@@ -3,7 +3,7 @@ import os
 
 # 本地模型路径
 LOCAL_MODEL_PATH = './local_model'
-MODEL_NAME = 'all-MiniLM-L6-v2'  # 默认模型名称（可以更改）
+MODEL_NAME = 'multi-qa-MiniLM-L6-cos-v1'  # 默认模型名称（可以更改）
 
 # 加载模型并缓存到本地
 def load_model(local_model_path=LOCAL_MODEL_PATH):

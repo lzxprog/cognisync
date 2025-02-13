@@ -1,18 +1,18 @@
-name: cognisync-env  # 环境名称
+name: cognisync-env
 channels:
   - conda-forge
   - defaults
 dependencies:
-  - python=3.9  # 你可以根据需要选择适合的 Python 版本
+  - python=3.9
   - fastapi=0.95.1
   - uvicorn=0.22.0
   - numpy=1.23.5
-  - faiss-cpu=1.7.2  # FAISS CPU 版本，若需要 GPU 版本可以安装 faiss-gpu
+  - faiss-cpu=1.7.2
   - sentence-transformers=2.2.2
   - openai=0.27.0
-  - python-dotenv=0.21.1  # 用于加载 .env 文件
-  - pydantic=1.10.2  # FastAPI 需要的 Pydantic 库
-  - docx=0.2.5  # 支持 DOCX 文件处理
-  - fitz  # 用于 PDF 文本提取（PyMuPDF）
+  - python-dotenv=0.21.1
+  - pydantic=1.10.2
+  - pip
   - pip:
-      - faiss  # 如果你需要在 Conda 环境中使用其他版本的 FAISS，也可以通过 pip 安装
+      - python-docx  # 替代 docx 包
+      - PyMuPDF      # 替代 fitz 包
