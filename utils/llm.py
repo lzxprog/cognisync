@@ -4,7 +4,7 @@ from config import OPENAI_API_KEY  # 从配置文件中导入 API 密钥
 # 设置 OpenAI API 密钥
 client = OpenAI(api_key=OPENAI_API_KEY, base_url="https://api.deepseek.com")
 
-def call_llm(query: str, relevant_doc_content: str, model_name="gpt-3.5") -> str:
+def call_llm(query: str, relevant_doc_content: str, model_name="deepseek") -> str:
     """调用 OpenAI LLM 处理查询"""
     try:
         # 构建提示（prompt）
