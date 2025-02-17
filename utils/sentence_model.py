@@ -2,7 +2,7 @@ from sentence_transformers import SentenceTransformer
 
 # 本地模型路径
 LOCAL_MODEL_PATH = './local_model'
-MODEL_NAME = 'multi-qa-MiniLM-L6-cos-v1'  # 默认模型名称（可以更改）
+MODEL_NAME = 'paraphrase-multilingual-MiniLM-L12-v2'  # 更新为你想使用的多语言模型
 
 # 加载模型并缓存到本地
 def load_model(local_model_path=LOCAL_MODEL_PATH):
@@ -17,7 +17,7 @@ def load_model(local_model_path=LOCAL_MODEL_PATH):
     except Exception as e:
         # 如果加载本地模型失败，则从远程下载模型
         print(f"Loading model from remote. Error: {e}")
-        model = SentenceTransformer(MODEL_NAME)  # 使用默认模型
+        model = SentenceTransformer(MODEL_NAME)  # 使用指定的模型
         model.save(local_model_path)  # 将模型缓存到本地
         print(f"Model downloaded and cached to: {local_model_path}")
 

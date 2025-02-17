@@ -52,14 +52,6 @@ venv\Scripts\activate     # Windows
 pip install -r requirements.txt
 ```
 
-### 3️⃣ Configure environment variables
-Create a `.env` file in the project root:
-```
-OPENAI_API_KEY="sk-xxx"
-DATA_STORAGE="./data_storage"
-LOG_STORAGE="./logs"
-```
-
 ### 4️⃣ Run the server
 ```bash
 uvicorn main:app --reload --host 0.0.0.0 --port 8000
@@ -68,16 +60,9 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ## 📌 API Endpoints
 | Method   | Endpoint             | Description |
 |----------|----------------------|-------------|
-| `POST`   | `/upload`            | Uploads and encrypts a file |
 | `POST`   | `/query`             | AI-powered query on encrypted data |
-| `GET`    | `/logs/{query_id}`   | Retrieves AI response references |
-| `DELETE` | `/destroy/{file_id}` | Securely destroys a file |
 
 ## 🔥 Next Steps
-✅ Implement `/upload` API for secure file handling
-✅ Integrate AES encryption & device binding
 🔜 Develop `/query` API for AI-powered data search
-🔜 Implement `/destroy` API for secure deletion
-
 ---
 ### 🚀 cognisync: Bridging AI & Enterprise Data Securely

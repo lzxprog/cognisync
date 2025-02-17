@@ -1,79 +1,90 @@
-from fastapi import APIRouter, HTTPException
-from routes.upload import file_id_map, file_path_map  # 从 upload.py 导入映射
-from utils.llm import call_llm  # 引入 LLM 调用函数
-from config import FAISS_INDEX_PATH
-import faiss
-import numpy as np
 import logging
-
+from fastapi import APIRouter, HTTPException
+from typing import List
+import numpy as np
+import os
+from utils.faiss_utils import load_faiss_index
+from utils.mapping_utils import load_mappings
 from utils.sentence_model import get_model, encode_text
+from utils.llm import call_llm
+from config import MAX_CONTEXT_LENGTH
 
-# 创建查询路由
+# 获取日志记录器
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
-# 加载 FAISS 索引
-def load_faiss_index_from_disk() -> faiss.Index:
-    try:
-        index = faiss.read_index(FAISS_INDEX_PATH)
-        return index
-    except Exception as e:
-        logging.error(f"Error loading FAISS index: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error loading FAISS index: {str(e)}")
 
-# 读取文件内容并转化为文本（假设是文本文件）
-def read_file_content(file_path: str) -> str:
-    try:
-        with open(file_path, "r", encoding="utf-8") as file:
-            return file.read()
-    except Exception as e:
-        logging.error(f"Error reading file {file_path}: {str(e)}")
-        return ""
-
-# 查询接口
 @router.post("/query")
-async def query(query: str, k: int = 3):
+async def query(query: str, k: int = 100, threshold: float = 0):
     try:
-        # 加载 FAISS 索引
-        faiss_index = load_faiss_index_from_disk()
-
-        # 获取 Sentence-BERT 模型
+        # 实时加载最新资源
+        file_id_map, file_path_map = load_mappings()
+        index = load_faiss_index()
+        logger.info(f"Loaded FAISS index with {index.ntotal} vectors")  # Debug log for index load
         model = get_model()
 
-        # 将查询转化为向量
-        query_vector = np.array(encode_text(model, query), dtype=np.float32)
+        # 编码查询
+        query_vector = encode_text(model, query)
+        logger.info(f"Generated query vector with shape: {query_vector.shape}")  # Debug log for query vector
 
-        # 使用 FAISS 进行检索
-        D, I = faiss_index.search(query_vector.reshape(1, -1), k)  # FAISS 要求输入是二维数组
+        # 转换为 numpy 数组并进行 L2 归一化
+        query_array = np.array(query_vector, dtype=np.float32).reshape(1, -1)
+        query_array = query_array / np.linalg.norm(query_array, axis=1, keepdims=True)  # L2 normalization
 
-        # 获取相关文档路径
-        relevant_docs = []
-        for i in range(k):
-            doc_id = I[0][i]
-            # 获取文件的 MD5
-            file_md5 = file_id_map.get(doc_id)
-            if file_md5:
-                # 使用 MD5 获取文件路径
-                file_path = file_path_map.get(file_md5)
-                if file_path:
-                    relevant_docs.append(file_path)
-                else:
-                    logging.warning(f"No file path found for MD5 {file_md5}")
-            else:
-                logging.warning(f"No file ID found for FAISS ID {doc_id}")
+        # 相似性搜索
+        distances, indices = index.search(query_array, k)
+        logger.info(f"Search results: indices={indices}, distances={distances}")  # Debug log for search results
 
-        if not relevant_docs:
-            raise HTTPException(status_code=404, detail="No relevant documents found.")
+        # 结果过滤
+        valid_docs = _filter_results(indices[0], distances[0], threshold, file_id_map, file_path_map)
 
-        # 读取所有相关文件的内容并合并
-        documents_content = ""
-        for file_path in relevant_docs:
-            file_content = read_file_content(file_path)
-            documents_content += file_content + "\n"  # 合并文件内容
+        # 获取文档内容
+        documents_content = _load_documents_content(valid_docs)
 
-        # 调用 LLM 生成答案
-        answer = call_llm(query, documents_content)
+        # 确保正确切片列表
+        if documents_content:
+            answer = call_llm(query, documents_content[:MAX_CONTEXT_LENGTH])
+        else:
+            answer = "No relevant documents found."
 
-        return {"answer": answer, "relevant_documents": relevant_docs}
+        return {
+            "answer": answer,
+            "relevant_documents": valid_docs,
+            "distances": distances[0].tolist()
+        }
 
+    except HTTPException as e:
+        raise e
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error processing query: {str(e)}")
+        logger.error(f"Query processing failed: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+def _filter_results(indices, distances, threshold, file_id_map, file_path_map) -> List[str]:
+    """过滤搜索结果"""
+    valid_docs = []
+    for doc_id, distance in zip(indices, distances):
+        logger.info(f"Checking doc {doc_id} with distance {distance}")  # Debug log for filtering
+        if distance > threshold:
+            continue
+
+        if (md5 := file_id_map.get(int(doc_id))) and (path := file_path_map.get(md5)):
+            if os.path.exists(path):
+                valid_docs.append(path)
+            else:
+                logger.warning(f"File not found: {path}")
+        else:
+            logger.warning(f"Invalid document ID: {doc_id}")
+    return valid_docs
+
+
+def _load_documents_content(file_paths: List[str]) -> List[str]:
+    """安全加载文档内容"""
+    content = []
+    for path in file_paths:
+        try:
+            with open(path, 'r', encoding='utf-8', errors='ignore') as f:
+                content.append(f.read())
+        except Exception as e:
+            logger.error(f"Error reading {path}: {str(e)}")
+    return content  # Return a list of document content, not a single string
