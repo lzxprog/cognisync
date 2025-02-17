@@ -84,6 +84,7 @@ def save_faiss_index(index: faiss.Index):
 
         # 先写入临时文件
         logger.info(f"Writing FAISS index to temporary file: {temp_path}")
+        logger.debug(f"Index contains {index.ntotal} vectors before saving")
         with portalocker.Lock(temp_path, 'wb', timeout=15) as f:
             if index.ntotal < 0:
                 raise RuntimeError("Invalid index structure detected")
