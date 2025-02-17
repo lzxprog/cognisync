@@ -23,4 +23,4 @@ Thumbs.db
 
 # Ignore JetBrains IDE files
 .idea/
-local_models/
+local_model/
