@@ -72,6 +72,10 @@ def load_faiss_index_with_retry(use_cache: bool = True, max_retries: int = 3) ->
 def save_faiss_index(index: faiss.Index):
     try:
         index_path = Path(FAISS_INDEX_PATH)
+        # 删除备份文件
+        if index_path.exists():
+            os.remove(index_path)
+            logger.info(f"Old {index_path} removed")
         faiss.write_index(index, str(index_path))
     except Exception as e:
         logger.error(f"Index save failed: {e}", exc_info=True)

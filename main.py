@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from config import ENVIRONMENT, FILES_PATH
 from logging_set_up import configure_logging
 from routes import query
-from utils.load import process_files_in_directory
+from utils.load import process_files_in_directory, FileIndexState
 
 
 # 环境判断函数
@@ -23,21 +23,25 @@ def initialize():
     logger = logging.getLogger(__name__)
     logger.info(get_environment_log())
 
+    # 初始化索引
+    state = FileIndexState()
+
     # 加载本地知识库
-    process_files_in_directory(FILES_PATH)
+    process_files_in_directory(state,FILES_PATH)
+
 
 
 # 创建 FastAPI 应用实例
-def create_app():
-    app = FastAPI()
-    app.include_router(query.router, tags=["AI Querying"])
+app = FastAPI()
 
-    # 首页测试路由
-    @app.get("/")
-    def read_root():
-        return {"message": "Welcome to cognisync API!"}
+# 包含路由
+app.include_router(query.router, tags=["AI Querying"])
 
-    return app
+
+# 首页测试路由
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to cognisync API!"}
 
 
 # 主函数
@@ -45,11 +49,8 @@ def main():
     # 初始化配置
     initialize()
 
-    # 创建 FastAPI 应用
-    app = create_app()
-
     # 启动 FastAPI 应用
-    uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
 
 
 # 启动 FastAPI 应用

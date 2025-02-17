@@ -73,7 +73,7 @@ def calculate_md5_from_text(text: str,
 
 
 class FileIndexState:
-    """管理索引状态的单例类，优化后版本"""
+    """管理索引状态的单例类"""
     _instance = None
     _lock = threading.Lock()
 
@@ -94,17 +94,46 @@ class FileIndexState:
     def load_mappings(self):
         """加载映射关系"""
         try:
+            logger.debug(f"Attempting to load mappings from: {MAPPING_PATH}")
+
+            # 检查文件是否存在
             if Path(MAPPING_PATH).exists():
+                # 检查文件读取权限
+                if not os.access(MAPPING_PATH, os.R_OK):
+                    logger.error(f"File {MAPPING_PATH} is not readable due to permission issues.")
+                    raise PermissionError(f"File {MAPPING_PATH} is not readable due to permission issues.")
+
+                # 带锁读取文件
                 with portalocker.Lock(MAPPING_PATH, timeout=5) as f:
-                    data = json.load(f)
-                    self.file_id_map = {int(k): v for k, v in data['file_id_map'].items()}
-                    self.file_path_map = data['file_path_map']
-                logger.info("Mappings loaded successfully")
+                    try:
+                        # 读取文件内容作为字符串
+                        with open(MAPPING_PATH, 'r', encoding='utf-8') as file:
+                            content = file.read()
+
+                        # 输出内容以检查文件格式
+                        logger.debug(f"File content: {content}")
+
+                        # 尝试解析 JSON
+                        data = json.loads(content)
+
+                        # 解析文件内容
+                        self.file_id_map = {int(k): v for k, v in data['file_id_map'].items()}
+                        self.file_path_map = data['file_path_map']
+
+                        logger.info("Mappings loaded successfully")
+
+                    except json.JSONDecodeError as json_error:
+                        logger.error(f"Failed to decode JSON from {MAPPING_PATH}: {json_error}")
+                        self._create_new_mappings()
+                    except Exception as e:
+                        logger.error(f"Failed to load mappings: {str(e)}")
+                        self._create_new_mappings()
             else:
                 self._create_new_mappings()
-        except Exception as e:
-            logger.error(f"Failed to load mappings: {str(e)}")
-            self._create_new_mappings()
+
+        except portalocker.LockException as lock_error:
+            logger.error(f"Failed to acquire lock for {MAPPING_PATH}: {lock_error}")
+            raise lock_error
 
     def _create_new_mappings(self):
         """创建新的映射文件"""
@@ -126,10 +155,8 @@ class FileIndexState:
             logger.error(f"Failed to save mappings: {str(e)}")
 
 
-def process_local_file(file_path: str) -> dict:
-    logger.info("Processing local file")
-    state = FileIndexState()
-    logger.info("Loading index")
+def process_local_file(state,file_path: str) -> dict:
+
     filename = os.path.basename(file_path)
 
     try:
@@ -205,19 +232,16 @@ def _update_index(state, vector, file_md5, file_path) -> int:
     return doc_id
 
 
-def process_files_in_directory(directory_path: str) -> None:
+def process_files_in_directory(state,directory_path: str) -> None:
     """处理文件夹中的所有文件"""
     if not os.path.isdir(directory_path):
         logger.error(f"The provided path is not a valid directory: {directory_path}")
         return
 
     logger.info(f"Processing files in directory: {directory_path}")
-    processed_files = set()  # 用于存储已处理的文件路径
     # 遍历目录并处理文件
     for root, _, files in os.walk(directory_path):
         for file in files:
             file_path = os.path.join(root, file)
-            if file_path not in processed_files:  # 确保文件没有被处理过
-                result = process_local_file(file_path)
-                logger.info(f"Processing result for {file}: {result}")
-                processed_files.add(file_path)  # 记录已处理文件
+            result = process_local_file(state,file_path)
+            logger.info(f"Processing result for {file}: {result}")
