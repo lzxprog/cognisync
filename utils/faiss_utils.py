@@ -69,49 +69,13 @@ def load_faiss_index_with_retry(use_cache: bool = True, max_retries: int = 3) ->
     logger.critical("Failed to acquire lock after multiple attempts")
     raise RuntimeError("Failed to load FAISS index due to file lock issues")
 
-
 def save_faiss_index(index: faiss.Index):
-    """安全保存FAISS索引，带原子写入和备份机制"""
-    index_path = Path(FAISS_INDEX_PATH)
-    temp_path = index_path.with_suffix('.tmp')
-    backup_path = index_path.with_suffix('.bak')
-
     try:
-        # 检查目标路径是否可写
-        if not index_path.parent.exists() or not os.access(index_path.parent, os.W_OK):
-            logger.error(f"Cannot write to directory: {index_path.parent}")
-            raise PermissionError(f"Cannot write to directory: {index_path.parent}")
-
-        # 先写入临时文件
-        logger.info(f"Writing FAISS index to temporary file: {temp_path}")
-        logger.debug(f"Index contains {index.ntotal} vectors before saving")
-        with portalocker.Lock(temp_path, 'wb', timeout=15) as f:
-            if index.ntotal < 0:
-                raise RuntimeError("Invalid index structure detected")
-            faiss.write_index(index, str(temp_path))
-
-        # 原子替换操作
-        if backup_path.exists():
-            os.remove(backup_path)
-        if index_path.exists():
-            os.rename(index_path, backup_path)
-        os.rename(temp_path, index_path)
-
-        # 清理旧备份
-        if backup_path.exists():
-            os.remove(backup_path)
-
-        logger.info(f"Index saved successfully (ntotal={index.ntotal}) to {index_path}")
-
-    except portalocker.LockException as e:
-        logger.error(f"Failed to acquire lock for {temp_path}: {e}")
-        raise RuntimeError(f"Index save failed due to lock timeout: {e}") from e
+        index_path = Path(FAISS_INDEX_PATH)
+        faiss.write_index(index, str(index_path))
     except Exception as e:
         logger.error(f"Index save failed: {e}", exc_info=True)
-        # 如果保存失败，尝试恢复备份
-        _restore_backup(backup_path, index_path)
         raise
-
 
 def _create_new_index() -> faiss.Index:
     """创建新索引时动态获取维度"""
@@ -153,15 +117,3 @@ def _handle_corrupted_index() -> faiss.Index:
         return load_faiss_index(use_cache=False)
     logger.error("No backup available, creating new index")
     return _create_new_index()
-
-
-def _restore_backup(backup_path: Path, target_path: Path):
-    """尝试恢复备份"""
-    try:
-        if backup_path.exists():
-            os.replace(backup_path, target_path)
-            logger.warning("Restored from backup")
-        else:
-            logger.error("No backup available")
-    except Exception as e:
-        logger.critical(f"Backup restoration failed: {e}", exc_info=True)
