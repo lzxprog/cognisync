@@ -29,8 +29,8 @@ def call_llm(query: str, relevant_doc_content: str) -> str:
         response = openai.ChatCompletion.create(
             model="deepseek-chat",  # 使用传入的模型名称
             messages=custom_messages,  # 使用自定义的消息
-            temperature=0.7,  # 设置生成文本的随机性
-            max_tokens=512  # 设置回答的最大长度
+            temperature=0.6,  # 设置生成文本的随机性
+            max_tokens=128  # 设置回答的最大长度
         )
 
         # 检查响应
