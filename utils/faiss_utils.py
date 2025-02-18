@@ -113,10 +113,5 @@ def _validate_cache() -> bool:
 
 def _handle_corrupted_index() -> faiss.Index:
     """处理索引损坏情况"""
-    backup_path = Path(FAISS_INDEX_PATH).with_suffix('.bak')
-    if backup_path.exists():
-        logger.warning("Restoring from backup...")
-        os.replace(backup_path, FAISS_INDEX_PATH)
-        return load_faiss_index(use_cache=False)
     logger.error("No backup available, creating new index")
     return _create_new_index()

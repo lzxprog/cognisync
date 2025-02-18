@@ -3,6 +3,7 @@ from fastapi import APIRouter, HTTPException
 from typing import List
 import numpy as np
 import os
+import jieba  # 引入jieba库进行中文分词
 
 from config import MAX_FILE_SIZE
 from utils.faiss_utils import load_faiss_index
@@ -25,8 +26,11 @@ async def query(query: str, k: int = 100, threshold: float = 0):
         logger.info(f"Loaded FAISS index with {index.ntotal} vectors")  # Debug log for index load
         model = get_model()
 
-        # 编码查询
-        query_vector = encode_text(model, query)
+        # 中文查询文本分词
+        tokenized_query = " ".join(jieba.cut(query))  # 使用jieba进行分词
+
+        # 编码查询（注意，传入的是分词后的查询文本）
+        query_vector = encode_text(model, tokenized_query)
         logger.info(f"Generated query vector with shape: {query_vector.shape}")  # Debug log for query vector
 
         # 转换为 numpy 数组并进行 L2 归一化

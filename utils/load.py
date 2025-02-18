@@ -5,7 +5,7 @@ import os
 import threading
 from pathlib import Path
 from typing import Dict, Optional
-
+import jieba
 import faiss
 import numpy as np
 import portalocker
@@ -21,6 +21,7 @@ logger = logging.getLogger(__name__)
 
 # 初始化目录
 Path(FILES_PATH).mkdir(parents=True, exist_ok=True)
+
 
 def calculate_md5_from_text(text: str,
                             normalization_form: str = 'NFC',
@@ -153,8 +154,7 @@ class FileIndexState:
             logger.error(f"Failed to save mappings: {str(e)}")
 
 
-def process_local_file(state,file_path: str) -> dict:
-
+def process_local_file(state, file_path: str) -> dict:
     filename = os.path.basename(file_path)
 
     try:
@@ -171,11 +171,20 @@ def process_local_file(state,file_path: str) -> dict:
             logger.info(f"File exists: {filename} (MD5: {file_md5})")
             return {"status": "exists", "md5": file_md5, "file": filename}
 
-        # 文本编码
-        vector = _encode_file_content(content)
+        # 处理长文本
+        chunks = chunk_text(content)  # 长文本拆分成多个块
+        embeddings = []
+
+        # 为每个文本块生成嵌入
+        for chunk in chunks:
+            vector = _encode_file_content(chunk)  # 处理每个文本块
+            embeddings.append(vector)
+
+        # 聚合多个块的嵌入
+        aggregated_vector = aggregate_embeddings(embeddings)
 
         # 索引更新
-        doc_id = _update_index(state, vector, file_md5, file_path)
+        doc_id = _update_index(state, aggregated_vector, file_md5, file_path)
 
         return {"status": "success", "md5": file_md5, "id": doc_id, "file": filename}
 
@@ -184,16 +193,35 @@ def process_local_file(state,file_path: str) -> dict:
         return {"status": "error", "reason": str(e), "file": filename}
 
 
-
-
-
 def _encode_file_content(content: str) -> np.ndarray:
     """编码文本内容并进行 L2 归一化"""
     model = get_model()
-    vector = encode_text(model, content)
+
+    # 对中文文本进行分词
+    tokenized_text = " ".join(jieba.cut(content))  # 使用jieba分词
+
+    # 将分词后的文本输入模型进行嵌入
+    vector = encode_text(model, tokenized_text)
     vector = np.array(vector, dtype=np.float32).reshape(1, -1)
     vector = vector / np.linalg.norm(vector, axis=1, keepdims=True)  # L2 normalization
     return vector
+
+
+def chunk_text(text: str, max_tokens: int = 512) -> list:
+    """根据最大token数量，将长文本拆分为多个块"""
+    tokens = text.split()
+    chunks = []
+
+    for i in range(0, len(tokens), max_tokens):
+        chunk = " ".join(tokens[i:i + max_tokens])
+        chunks.append(chunk)
+
+    return chunks
+
+
+def aggregate_embeddings(embeddings: list) -> np.ndarray:
+    """对多个嵌入进行平均池化合并"""
+    return np.mean(np.vstack(embeddings), axis=0)
 
 
 def _update_index(state, vector, file_md5, file_path) -> int:
@@ -213,16 +241,15 @@ def _update_index(state, vector, file_md5, file_path) -> int:
     return doc_id
 
 
-def process_files_in_directory(state,directory_path: str) -> None:
+def process_files_in_directory(state, directory_path: str) -> None:
     """处理文件夹中的所有文件"""
     if not os.path.isdir(directory_path):
         logger.error(f"The provided path is not a valid directory: {directory_path}")
         return
 
     logger.info(f"Processing files in directory: {directory_path}")
-    # 遍历目录并处理文件
     for root, _, files in os.walk(directory_path):
         for file in files:
             file_path = os.path.join(root, file)
-            result = process_local_file(state,file_path)
+            result = process_local_file(state, file_path)
             logger.info(f"Processing result for {file}: {result}")
