@@ -3,11 +3,13 @@ from fastapi import APIRouter, HTTPException
 from typing import List
 import numpy as np
 import os
+
+from config import MAX_FILE_SIZE
 from utils.faiss_utils import load_faiss_index
 from utils.mapping_utils import load_mappings
 from utils.sentence_model import get_model, encode_text
 from utils.llm import call_llm
-from config import MAX_CONTEXT_LENGTH
+from utils.text_processing import extract_file_content
 
 # 获取日志记录器
 logger = logging.getLogger(__name__)
@@ -43,7 +45,7 @@ async def query(query: str, k: int = 100, threshold: float = 0):
 
         # 确保正确切片列表
         if documents_content:
-            answer = call_llm(query, documents_content[:MAX_CONTEXT_LENGTH])
+            answer = call_llm(query, documents_content[:MAX_FILE_SIZE])
         else:
             answer = "No relevant documents found."
 
@@ -83,8 +85,7 @@ def _load_documents_content(file_paths: List[str]) -> List[str]:
     content = []
     for path in file_paths:
         try:
-            with open(path, 'r', encoding='utf-8', errors='ignore') as f:
-                content.append(f.read())
+            content.append(extract_file_content(path))
         except Exception as e:
             logger.error(f"Error reading {path}: {str(e)}")
     return content  # Return a list of document content, not a single string

@@ -14,7 +14,7 @@ import unicodedata
 from utils.faiss_utils import load_faiss_index, save_faiss_index
 from config import FILES_PATH, MAPPING_PATH
 from utils.sentence_model import get_model, encode_text
-from utils.text_processing import extract_text_from_docx, extract_text_from_pdf
+from utils.text_processing import extract_file_content
 
 # 获取日志记录器
 logger = logging.getLogger(__name__)
@@ -159,7 +159,7 @@ def process_local_file(state,file_path: str) -> dict:
 
     try:
         # 文本提取与验证
-        content = _extract_file_content(file_path)
+        content = extract_file_content(file_path)
         logger.info(f"Extracted content from {content}")
         if not content:
             return {"status": "skipped", "reason": "empty_content", "file": filename}
@@ -184,24 +184,7 @@ def process_local_file(state,file_path: str) -> dict:
         return {"status": "error", "reason": str(e), "file": filename}
 
 
-def _extract_file_content(file_path: str) -> str:
-    """提取文件内容，带格式校验"""
-    file_ext = os.path.splitext(file_path)[1].lower()
-    logger.info(f"Processing {file_path}")
-    logger.info(f"Processing {file_ext}")
-    handlers = {
-        '.docx': extract_text_from_docx,
-        '.pdf': extract_text_from_pdf,
-        '.txt': lambda p: Path(p).read_text(encoding='utf-8')
-    }
 
-    if file_ext not in handlers:
-        raise ValueError(f"Unsupported file type: {file_ext}")
-
-    content = handlers[file_ext](file_path)
-    if not content.strip():
-        raise ValueError("Empty file content")
-    return content.strip()
 
 
 def _encode_file_content(content: str) -> np.ndarray:

@@ -10,14 +10,32 @@ from pdfminer.high_level import extract_text as pdfminer_extract_text
 from pdfminer.pdfparser import PDFSyntaxError
 import chardet
 
+from config import MAX_FILE_SIZE
+
 # 获取日志记录器
 logger = logging.getLogger(__name__)
 
 # 配置日志
 warnings.filterwarnings("ignore", category=UserWarning)  # 禁用PDFMiner的警告
 
-# 文件大小限制（100MB）
-MAX_FILE_SIZE = 100 * 1024 * 1024 * 2
+def extract_file_content(file_path: str) -> str:
+    """提取文件内容，带格式校验"""
+    file_ext = os.path.splitext(file_path)[1].lower()
+    logger.info(f"Processing {file_path}")
+    logger.info(f"Processing {file_ext}")
+    handlers = {
+        '.docx': extract_text_from_docx,
+        '.pdf': extract_text_from_pdf,
+        '.txt': lambda p: Path(p).read_text(encoding='utf-8')
+    }
+
+    if file_ext not in handlers:
+        raise ValueError(f"Unsupported file type: {file_ext}")
+
+    content = handlers[file_ext](file_path)
+    if not content.strip():
+        raise ValueError("Empty file content")
+    return content.strip()
 
 def extract_text_from_docx(docx_file: Union[BytesIO, str, Path]) -> str:
     """
