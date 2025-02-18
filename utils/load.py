@@ -103,31 +103,29 @@ class FileIndexState:
                     logger.error(f"File {MAPPING_PATH} is not readable due to permission issues.")
                     raise PermissionError(f"File {MAPPING_PATH} is not readable due to permission issues.")
 
-                # 带锁读取文件
-                with portalocker.Lock(MAPPING_PATH, timeout=5) as f:
-                    try:
-                        # 读取文件内容作为字符串
-                        with open(MAPPING_PATH, 'r', encoding='utf-8') as file:
-                            content = file.read()
+                try:
+                    # 读取文件内容作为字符串
+                    with open(MAPPING_PATH, 'r', encoding='utf-8') as file:
+                        content = file.read()
 
-                        # 输出内容以检查文件格式
-                        logger.debug(f"File content: {content}")
+                    # 输出内容以检查文件格式
+                    logger.debug(f"File content: {content}")
 
-                        # 尝试解析 JSON
-                        data = json.loads(content)
+                    # 尝试解析 JSON
+                    data = json.loads(content)
 
-                        # 解析文件内容
-                        self.file_id_map = {int(k): v for k, v in data['file_id_map'].items()}
-                        self.file_path_map = data['file_path_map']
+                    # 解析文件内容
+                    self.file_id_map = {int(k): v for k, v in data['file_id_map'].items()}
+                    self.file_path_map = data['file_path_map']
 
-                        logger.info("Mappings loaded successfully")
+                    logger.info("Mappings loaded successfully")
 
-                    except json.JSONDecodeError as json_error:
-                        logger.error(f"Failed to decode JSON from {MAPPING_PATH}: {json_error}")
-                        self._create_new_mappings()
-                    except Exception as e:
-                        logger.error(f"Failed to load mappings: {str(e)}")
-                        self._create_new_mappings()
+                except json.JSONDecodeError as json_error:
+                    logger.error(f"Failed to decode JSON from {MAPPING_PATH}: {json_error}")
+                    self._create_new_mappings()
+                except Exception as e:
+                    logger.error(f"Failed to load mappings: {str(e)}")
+                    self._create_new_mappings()
             else:
                 self._create_new_mappings()
 

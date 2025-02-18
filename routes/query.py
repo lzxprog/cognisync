@@ -65,7 +65,7 @@ def _filter_results(indices, distances, threshold, file_id_map, file_path_map) -
     valid_docs = []
     for doc_id, distance in zip(indices, distances):
         logger.info(f"Checking doc {doc_id} with distance {distance}")  # Debug log for filtering
-        if distance > threshold:
+        if distance < threshold:
             continue
 
         if (md5 := file_id_map.get(int(doc_id))) and (path := file_path_map.get(md5)):

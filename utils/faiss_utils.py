@@ -29,10 +29,9 @@ def load_faiss_index(use_cache: bool = True) -> faiss.Index:
             logger.warning("FAISS index not found, creating new index")
             return _create_new_index()
 
-        # 带锁读取
-        with portalocker.Lock(index_path, 'rb', timeout=10) as f:
-            index = faiss.read_index(str(index_path))
-            current_mtime = os.path.getmtime(index_path)
+        # 加载索引
+        index = faiss.read_index(str(index_path))
+        current_mtime = os.path.getmtime(index_path)
 
         # 验证索引完整性
         if index.ntotal < 0:
