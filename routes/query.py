@@ -16,7 +16,6 @@ from utils.text_processing import extract_file_content
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-
 @router.post("/query")
 async def query(query: str, k: int = 100, threshold: float = 0):
     try:
@@ -33,8 +32,8 @@ async def query(query: str, k: int = 100, threshold: float = 0):
         query_vector = encode_text(model, tokenized_query)
         logger.info(f"Generated query vector with shape: {query_vector.shape}")  # Debug log for query vector
 
-        # 转换为 numpy 数组并进行 L2 归一化
-        query_array = np.array(query_vector, dtype=np.float32).reshape(1, -1)
+        # 确保 query_vector 是二维数组，并进行 L2 归一化
+        query_array = np.array(query_vector, dtype=np.float32).reshape(1, -1)  # reshape 为 (1, d)
         query_array = query_array / np.linalg.norm(query_array, axis=1, keepdims=True)  # L2 normalization
 
         # 相似性搜索
@@ -64,7 +63,6 @@ async def query(query: str, k: int = 100, threshold: float = 0):
     except Exception as e:
         logger.error(f"Query processing failed: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal server error")
-
 
 def _filter_results(indices, distances, threshold, file_id_map, file_path_map) -> List[str]:
     """过滤搜索结果"""

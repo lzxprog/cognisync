@@ -202,7 +202,7 @@ def _encode_file_content(content: str) -> np.ndarray:
 
     # 将分词后的文本输入模型进行嵌入
     vector = encode_text(model, tokenized_text)
-    vector = np.array(vector, dtype=np.float32).reshape(1, -1)
+    vector = np.array(vector, dtype=np.float32).reshape(1, -1)  # 确保返回的是二维数组
     vector = vector / np.linalg.norm(vector, axis=1, keepdims=True)  # L2 normalization
     return vector
 
@@ -218,16 +218,18 @@ def chunk_text(text: str, max_tokens: int = 512) -> list:
 
     return chunks
 
-
 def aggregate_embeddings(embeddings: list) -> np.ndarray:
     """对多个嵌入进行平均池化合并"""
     return np.mean(np.vstack(embeddings), axis=0)
-
 
 def _update_index(state, vector, file_md5, file_path) -> int:
     """更新索引和映射"""
     if state.faiss_index is None:
         state.faiss_index = load_faiss_index()
+
+    # 确保向量是二维的 (n, d)
+    if vector.ndim == 1:
+        vector = vector.reshape(1, -1)  # 将一维向量转换为二维数组
 
     state.faiss_index.add(vector)
     doc_id = state.faiss_index.ntotal - 1
