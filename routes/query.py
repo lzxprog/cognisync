@@ -47,8 +47,8 @@ async def query(query: str, k: int = 2):
 
         # 确保正确切片列表
         if documents_content:
-            answer = call_llm(query, documents_content[:MAX_FILE_SIZE])
-            # answer = '文档'
+            # answer = call_llm(query, documents_content[:MAX_FILE_SIZE])
+            answer = '文档'
         else:
             answer = "No relevant documents found."
 

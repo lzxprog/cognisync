@@ -207,7 +207,7 @@ def _encode_file_content(content: str) -> np.ndarray:
     return vector
 
 
-def chunk_text(text: str, max_tokens: int = 512) -> list:
+def chunk_text(text: str, max_tokens: int = 128) -> list:
     """根据最大token数量，将长文本拆分为多个块"""
     tokens = text.split()
     chunks = []
