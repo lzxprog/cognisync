@@ -3,7 +3,7 @@ __pycache__/
 *.py[cod]
 
 # Ignore environment files
-.env
+
 venv/
 *.log
 
