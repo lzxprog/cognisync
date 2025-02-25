@@ -208,13 +208,47 @@ def _encode_file_content(content: str) -> np.ndarray:
 
 
 def chunk_text(text: str, max_tokens: int = 128) -> list:
-    """根据最大token数量，将长文本拆分为多个块"""
+    """滑动窗口分块函数 (改进版)
+
+    参数：
+    - text: 输入文本
+    - max_tokens: 窗口大小（每个块的token数量）
+
+    返回：
+    - 包含文本块的列表，相邻块有50%重叠
+
+    示例：
+    输入: "a b c d e f g", max_tokens=4
+    输出: ["a b c d", "c d e f", "e f g"]
+    """
     tokens = text.split()
     chunks = []
+    total_tokens = len(tokens)
 
-    for i in range(0, len(tokens), max_tokens):
-        chunk = " ".join(tokens[i:i + max_tokens])
-        chunks.append(chunk)
+    # 自动计算重叠步长（默认50%重叠）
+    step_size = max(max_tokens // 2, 1)  # 保证最小步长为1
+
+    # 边界情况处理
+    if total_tokens <= max_tokens:
+        return [" ".join(tokens)]
+
+    # 生成滑动窗口块
+    start_idx = 0
+    while start_idx < total_tokens:
+        end_idx = min(start_idx + max_tokens, total_tokens)
+        current_chunk = tokens[start_idx:end_idx]
+
+        # 当剩余token不足时，向前扩展窗口
+        if len(current_chunk) < max_tokens and start_idx > 0:
+            required = max_tokens - len(current_chunk)
+            current_chunk = tokens[max(0, start_idx - required):end_idx]
+
+        chunks.append(" ".join(current_chunk))
+        start_idx += step_size
+
+        # 防止最后一个块重复
+        if end_idx == total_tokens:
+            break
 
     return chunks
 
