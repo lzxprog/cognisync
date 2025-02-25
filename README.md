@@ -36,6 +36,3 @@ git clone https://github.com/yourusername/cognisync.git
 
 # 安装依赖
 pip install -r requirements.txt
-
-# 配置环境
-cp .env.example .env
