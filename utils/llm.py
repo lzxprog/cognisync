@@ -20,7 +20,17 @@ def call_llm(query: str, relevant_doc_content: str) -> str:
     logging.info(f"Relevant document content: {relevant_doc_content}")
     try:
         custom_messages = [
-            {"role": "system", "content": "You are a helpful assistant who answers questions based on the content of the provided documents."},
+            {
+                "role": "system",
+                "content": (
+                    "你是一个专业的信息助理，请严格根据提供的文档内容回答问题。"
+                    "遵循以下规则：\n"
+                    "1. 回答需基于文档事实，优先使用列表和结构化格式\n"
+                    "2. 如果文档信息不足，明确说明缺失信息\n"
+                    "3. 对不确定的内容标注置信度\n"
+                    "4. 保持回答简洁专业，避免冗余解释"
+                )
+            },
             {"role": "user", "content": f"Document: {relevant_doc_content}"},
             {"role": "user", "content": f"Question: {query}"}
         ]
