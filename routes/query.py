@@ -9,7 +9,7 @@ from config import MAX_FILE_SIZE
 from utils.faiss_utils import load_faiss_index
 from utils.mapping_utils import load_mappings
 from utils.sentence_model import get_model, encode_text
-from utils.llm import call_llm
+from utils.llm import call_llm, call_llm_query
 from utils.text_processing import extract_file_content
 
 logger = logging.getLogger(__name__)
@@ -17,25 +17,28 @@ router = APIRouter()
 
 
 @router.post("/query")
-async def query(query: str, k: int = 2):
+async def query(query: str,openApiKey:str, k: int = 13):
     try:
+        # 将问题直接解析为相关联得关键词
+        keyword = call_llm_query(query,openApiKey)
         file_id_map, file_path_map = load_mappings()
         index = load_faiss_index()
         logger.info(f"Loaded FAISS index with {index.ntotal} vectors")
         model = get_model()
 
-        tokenized_query = " ".join(jieba.cut(query))
+        tokenized_query = " ".join(jieba.cut(keyword))
         query_vector = encode_text(model, tokenized_query)
         logger.debug(f"Generated query vector with shape: {query_vector.shape}")
 
         query_array = np.array(query_vector, dtype=np.float32).reshape(1, -1)
-        distances, indices = index.search(query_array, k)  # 关键优化点1：直接查询k个结果
+        distances, indices = index.search(query_array, k)  # 直接查询k个结果
         logger.debug(f"Search results: indices={indices}, distances={distances}")
 
         valid_docs = _filter_results(indices[0], distances[0], k, file_id_map, file_path_map)
         documents_content = _load_documents_content(valid_docs)
 
-        answer = call_llm(query, documents_content[:MAX_FILE_SIZE]) if documents_content else "No relevant documents found."
+        # answer = call_llm(query, documents_content[:MAX_FILE_SIZE],openApiKey) if documents_content else "No relevant documents found."
+        answer =  ""
 
         return {
             "answer": answer,

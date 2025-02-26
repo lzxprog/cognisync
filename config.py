@@ -4,8 +4,6 @@ from dotenv import load_dotenv
 # 加载 .env 文件中的环境变量
 load_dotenv()
 
-# 从环境变量中获取配置项，如果未设置则使用默认值
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")  # GPT-3 API 密钥
 DATA_STORAGE_PATH = os.getenv("DATA_STORAGE_PATH", "./data_storage")  # 数据存储路径
 FILES_PATH = os.getenv("FILES_PATH", "./data_storage/files")  # 文件存储路径（原始文件存储）
 MAPPING_PATH = os.getenv("MAPPING_PATH", "./data_storage/data.json")  # 索引持久化路径

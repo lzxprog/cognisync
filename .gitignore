@@ -7,10 +7,6 @@ __pycache__/
 venv/
 *.log
 
-# Ignore data storage and logs
-data_storage/files/*
-logs/*
-
 # Ignore search index
 search_index/
 
