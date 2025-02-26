@@ -10,6 +10,8 @@ MAPPING_PATH = os.getenv("MAPPING_PATH", "./data_storage/data.json")  # 索引�
 SIMILARITY_THRESHOLD = float(os.getenv("SIMILARITY_THRESHOLD", 0.1))  # 默认相似度阈值 10%
 FAISS_INDEX_PATH = os.getenv("FAISS_INDEX_PATH", "./data_storage/faiss.index")  # FAISS 索引路径
 MAX_CONTEXT_LENGTH = os.getenv("MAX_CONTEXT_LENGTH", 209715200)  # 文本最大长度
+LOCAL_MODEL_PATH = os.getenv("LOCAL_MODEL_PATH", "./local_model")  # 本地模型路径
+MODEL_NAME = os.getenv("MODEL_NAME", "paraphrase-multilingual-MiniLM-L12-v2")  # 本地模型
 
 # 环境配置（development, production, or default）
 ENVIRONMENT = os.getenv("ENVIRONMENT", "default")
