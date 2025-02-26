@@ -1,40 +1,222 @@
-﻿# requirements.txt (纯pip安装版)
-
-### 核心依赖 ###
-torch==2.6.0 --extra-index-url https://download.pytorch.org/whl/cpu  # 替代conda的pytorch
-faiss-cpu==1.7.4  # 替代conda的faiss-cpu（需系统OpenBLAS）
-
-### 数值计算 ###
-numpy==1.23.5
-scipy==1.15.2
-pandas==2.2.3
-
-### NLP处理 ###
-sentence-transformers==3.4.1
-transformers==4.49.0
-tokenizers==0.21.0
-datasets==2.14.4
-nltk==3.9.1
-jieba==0.42.1
-
-### 文件处理 ###
-python-docx==1.1.2
-pymupdf==1.25.3  # 需要系统mupdf库
-pdfminer.six==20240706
-openpyxl==3.1.5
-lxml==5.3.1
-Pillow==11.1.0  # 替代conda的pillow
-
-### Web服务 ###
-fastapi==0.95.1
-uvicorn==0.22.0
-starlette==0.26.1
-pydantic==1.10.2
-
-### 其他工具 ###
-openai==0.27.0
-python-dotenv==0.21.1
-wandb==0.18.7
-tqdm==4.67.1
-requests==2.32.3
-typing-extensions==4.12.2
+﻿name: cognisync-env
+channels:
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main/
+  - anaconda
+  - conda-forge
+  - defaults
+dependencies:
+  - _openmp_mutex=4.5
+  - aiohappyeyeballs=2.4.6
+  - aiohttp=3.11.13
+  - aiosignal=1.3.2
+  - anyio=4.8.0
+  - appdirs=1.4.4
+  - async-timeout=5.0.1
+  - attrs=25.1.0
+  - aws-c-auth=0.8.1
+  - aws-c-cal=0.8.1
+  - aws-c-common=0.10.6
+  - aws-c-compression=0.3.0
+  - aws-c-event-stream=0.5.0
+  - aws-c-http=0.9.2
+  - aws-c-io=0.15.3
+  - aws-c-mqtt=0.11.0
+  - aws-c-s3=0.7.9
+  - aws-c-sdkutils=0.2.2
+  - aws-checksums=0.2.2
+  - aws-crt-cpp=0.29.9
+  - aws-sdk-cpp=1.11.489
+  - brotli=1.1.0
+  - brotli-bin=1.1.0
+  - brotli-python=1.1.0
+  - bzip2=1.0.8
+  - c-ares=1.34.4
+  - ca-certificates=2025.1.31
+  - certifi=2025.1.31
+  - cffi=1.17.1
+  - charset-normalizer=3.4.1
+  - click=8.1.8
+  - colorama=0.4.6
+  - contourpy=1.3.1
+  - cryptography=44.0.1
+  - cycler=0.12.1
+  - datasets=2.14.4
+  - dill=0.3.7
+  - docker-pycreds=0.4.0
+  - et_xmlfile=2.0.0
+  - exceptiongroup=1.2.2
+  - faiss=1.7.2
+  - faiss-cpu=1.7.2
+  - fastapi=0.95.1
+  - filelock=3.17.0
+  - fonttools=4.56.0
+  - freetype=2.12.1
+  - frozenlist=1.5.0
+  - fsspec=2025.2.0
+  - giflib=5.2.2
+  - gitdb=4.0.12
+  - gitpython=3.1.44
+  - h11=0.14.0
+  - h2=4.2.0
+  - hpack=4.1.0
+  - huggingface_hub=0.29.1
+  - hyperframe=6.1.0
+  - idna=3.10
+  - importlib-metadata=8.6.1
+  - intel-openmp=2024.2.1
+  - jieba=0.42.1
+  - jinja2=3.1.5
+  - joblib=1.4.2
+  - kiwisolver=1.4.7
+  - krb5=1.21.3
+  - lcms2=2.17
+  - lerc=4.0.0
+  - libabseil=20240722.0
+  - libarrow=19.0.1
+  - libarrow-acero=19.0.1
+  - libarrow-dataset=19.0.1
+  - libarrow-substrait=19.0.1
+  - libblas=3.9.0
+  - libbrotlicommon=1.1.0
+  - libbrotlidec=1.1.0
+  - libbrotlienc=1.1.0
+  - libcblas=3.9.0
+  - libcrc32c=1.1.2
+  - libcurl=8.12.1
+  - libdeflate=1.23
+  - libevent=2.1.12
+  - libfaiss=1.7.2
+  - libfaiss-avx2=1.7.2
+  - libffi=3.4.6
+  - libgcc=14.2.0
+  - libgomp=14.2.0
+  - libgoogle-cloud=2.35.0
+  - libgoogle-cloud-storage=2.35.0
+  - libgrpc=1.67.1
+  - libhwloc=2.11.2
+  - libiconv=1.18
+  - libjpeg-turbo=3.0.0
+  - liblapack=3.9.0
+  - liblzma=5.6.4
+  - libparquet=19.0.1
+  - libpng=1.6.47
+  - libprotobuf=5.28.3
+  - libre2-11=2024.07.02
+  - libsentencepiece=0.2.0
+  - libsqlite=3.49.1
+  - libssh2=1.11.1
+  - libthrift=0.21.0
+  - libtiff=4.7.0
+  - libtorch=2.6.0
+  - libutf8proc=2.10.0
+  - libuv=1.50.0
+  - libwebp-base=1.5.0
+  - libwinpthread=12.0.0.r4.gg4f2fc60ca
+  - libxcb=1.17.0
+  - libxml2=2.13.6
+  - libzlib=1.3.1
+  - lz4-c=1.10.0
+  - markupsafe=3.0.2
+  - matplotlib-base=3.10.0
+  - mkl=2024.2.2
+  - mpmath=1.3.0
+  - multidict=6.1.0
+  - multiprocess=0.70.15
+  - munkres=1.1.4
+  - narwhals=1.27.1
+  - networkx=3.4
+  - nltk=3.9.1
+  - numpy=1.23.5
+  - openai=0.27.0
+  - openjpeg=2.5.3
+  - openpyxl=3.1.5
+  - openssl=3.4.1
+  - optree=0.14.0
+  - orc=2.0.3
+  - packaging=24.2
+  - pandas=2.2.3
+  - pandas-stubs=2.0.1.230501
+  - pdfminer.six=20240706
+  - pillow=11.1.0
+  - pip=25.0.1
+  - platformdirs=4.3.6
+  - plotly=6.0.0
+  - portalocker=3.0.0
+  - propcache=0.2.1
+  - protobuf=5.28.3
+  - psutil=6.1.1
+  - pthread-stubs=0.4
+  - pyarrow=19.0.1
+  - pyarrow-core=19.0.1
+  - pybind11=2.13.6
+  - pybind11-global=2.13.6
+  - pycparser=2.22
+  - pydantic=1.10.2
+  - pyparsing=3.2.1
+  - pysocks=1.7.1
+  - python=3.10.16
+  - python-dateutil=2.9.0.post0
+  - python-dotenv=0.21.1
+  - python-tzdata=2025.1
+  - python-xxhash=3.5.0
+  - python_abi=3.10
+  - pytorch=2.6.0
+  - pytz=2024.1
+  - pywin32=307
+  - pyyaml=6.0.2
+  - qhull=2020.2
+  - re2=2024.07.02
+  - regex=2024.11.6
+  - requests=2.32.3
+  - safetensors=0.5.2
+  - scikit-learn=1.6.1
+  - scipy=1.15.2
+  - sentencepiece=0.2.0
+  - sentencepiece-python=0.2.0
+  - sentencepiece-spm=0.2.0
+  - sentry-sdk=2.22.0
+  - setproctitle=1.3.5
+  - setuptools=75.8.0
+  - six=1.17.0
+  - sleef=3.8
+  - smmap=5.0.2
+  - snappy=1.2.1
+  - sniffio=1.3.1
+  - starlette=0.26.1
+  - sympy=1.13.3
+  - tbb=2021.13.0
+  - tenacity=9.0.0
+  - threadpoolctl=3.5.0
+  - tk=8.6.13
+  - tokenizers=0.21.0
+  - torchvision=0.21.0
+  - tqdm=4.67.1
+  - transformers=4.49.0
+  - types-pytz=2025.1.0.20250204
+  - typing-extensions=4.12.2
+  - typing_extensions=4.12.2
+  - tzdata=2025a
+  - ucrt=10.0.22621.0
+  - unicodedata2=16.0.0
+  - urllib3=2.3.0
+  - uvicorn=0.22.0
+  - vc=14.3
+  - vc14_runtime=14.42.34433
+  - vs2015_runtime=14.42.34433
+  - wandb=0.18.7
+  - wheel=0.45.1
+  - win_inet_pton=1.1.0
+  - xorg-libxau=1.0.12
+  - xorg-libxdmcp=1.1.5
+  - xxhash=0.8.2
+  - yaml=0.2.5
+  - yarl=1.18.3
+  - zipp=3.21.0
+  - zstandard=0.19.0
+  - zstd=1.5.7
+  - pip:
+      - lxml==5.3.1
+      - pymupdf==1.25.3
+      - python-docx==1.1.2
+      - sentence-transformers==3.4.1
