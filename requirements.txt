@@ -1,30 +1,34 @@
-# cognisync 项目PIP依赖清单 (Python 3.10)
-# 注意：部分包需先通过conda安装系统依赖
+# requirements.txt (由 conda environment.yml 转换)
 
-### 核心计算库 ###
-numpy==1.21.6             # 必须<=1.21.6以避免DLL错误
-faiss-cpu==1.7.4          # 需先通过conda安装: conda install -c conda-forge faiss-cpu=1.7.4
+### 核心依赖 ###
+# --- 必须通过 conda 安装的包 (系统级依赖) ---
+# 需先执行: conda install faiss-cpu numpy=1.23.5 pytorch=2.6.0
 
-### 自然语言处理 ###
-sentence-transformers==2.2.2
-transformers==4.25.1      # 与sentence-transformers 2.2.2兼容
-huggingface-hub==0.12.0   # 使用旧版cached_download接口
+### 纯Python包 (可通过pip安装) ###
+# --- 文件处理 ---
+lxml==5.3.1
+pymupdf==1.25.3
+python-docx==1.1.2
 
-### Web服务框架 ###
+# --- NLP/深度学习 ---
+sentence-transformers==3.4.1
+transformers==4.49.0
+tokenizers==0.21.0
+datasets==2.14.4
+
+# --- Web服务 ---
 fastapi==0.95.1
 uvicorn==0.22.0
-pydantic==2.5.3           # FastAPI 0.95+必须使用v2
-pydantic-settings==2.0.3  # Pydantic v2配置扩展
+starlette==0.26.1
 
-### 文件处理 ###
-python-docx==0.8.12       # Word文档处理
-pymupdf==1.23.6           # 需要系统库: apt-get install libmupdf-dev (Linux)
-unstructured==0.10.3      # 多格式文本解析
-
-### 环境与API ###
+# --- 其他工具 ---
+openai==0.27.0
 python-dotenv==0.21.1
-openai==0.27.0            # 适配旧版API结构
+pandas==2.2.3
+numpy==1.23.5
 
-### 其他依赖 ###
-typing-extensions==4.5.0  # Pydantic v2所需
-requests==2.28.2          # 锁定安全版本
+### 安装说明 ###
+# 1. 先安装conda依赖:
+#    conda install faiss-cpu pytorch=2.6.0 numpy=1.23.5
+# 2. 再安装pip包:
+#    pip install -r requirements.txt

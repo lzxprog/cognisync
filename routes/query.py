@@ -5,7 +5,6 @@ import numpy as np
 import os
 import jieba
 
-from config import MAX_FILE_SIZE
 from utils.faiss_utils import load_faiss_index
 from utils.mapping_utils import load_mappings
 from utils.sentence_model import get_model, encode_text
@@ -17,7 +16,7 @@ router = APIRouter()
 
 
 @router.post("/query")
-async def query(query: str,openApiKey:str, k: int = 13):
+async def query(query: str,openApiKey:str, k: int = 20):
     try:
         # 将问题直接解析为相关联得关键词
         keyword = call_llm_query(query,openApiKey)

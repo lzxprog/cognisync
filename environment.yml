@@ -1,34 +1,40 @@
-name: cognisync-env
-channels:
-  - conda-forge
-  - defaults
+﻿# requirements.txt (纯pip安装版)
 
-dependencies:
-  # 基础环境
-  - python=3.10.12  # 精确小版本
-  - pip=23.3.1
+### 核心依赖 ###
+torch==2.6.0 --extra-index-url https://download.pytorch.org/whl/cpu  # 替代conda的pytorch
+faiss-cpu==1.7.4  # 替代conda的faiss-cpu（需系统OpenBLAS）
 
-  # Web服务
-  - fastapi=0.95.1
-  - uvicorn=0.22.0
-  - pydantic=2.5.3
-  - pydantic-settings=2.0.3
+### 数值计算 ###
+numpy==1.23.5
+scipy==1.15.2
+pandas==2.2.3
 
-  # 数据处理
-  - numpy=1.21.6
-  - faiss-cpu=1.7.4
+### NLP处理 ###
+sentence-transformers==3.4.1
+transformers==4.49.0
+tokenizers==0.21.0
+datasets==2.14.4
+nltk==3.9.1
+jieba==0.42.1
 
-  # NLP模型
-  - sentence-transformers=2.2.2
-  - transformers=4.25.1
-  - huggingface-hub=0.12.0
+### 文件处理 ###
+python-docx==1.1.2
+pymupdf==1.25.3  # 需要系统mupdf库
+pdfminer.six==20240706
+openpyxl==3.1.5
+lxml==5.3.1
+Pillow==11.1.0  # 替代conda的pillow
 
-  # 环境管理
-  - python-dotenv=0.21.1
-  - openai=0.27.0
+### Web服务 ###
+fastapi==0.95.1
+uvicorn==0.22.0
+starlette==0.26.1
+pydantic==1.10.2
 
-  # 文件处理
-  - pip:
-    - python-docx==0.8.12
-    - pymupdf==1.23.6
-    - unstructured==0.10.3  # 多格式文本提取增强
+### 其他工具 ###
+openai==0.27.0
+python-dotenv==0.21.1
+wandb==0.18.7
+tqdm==4.67.1
+requests==2.32.3
+typing-extensions==4.12.2
