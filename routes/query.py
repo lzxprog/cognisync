@@ -36,7 +36,6 @@ async def query(query: str,openApiKey:str, k: int = 13):
 
         valid_docs = _filter_results(indices[0], distances[0], k, file_id_map, file_path_map)
         documents_content = _load_documents_content(valid_docs)
-
         # answer = call_llm(query, documents_content[:MAX_FILE_SIZE],openApiKey) if documents_content else "No relevant documents found."
         answer =  ""
 
