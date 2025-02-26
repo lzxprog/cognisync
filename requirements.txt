@@ -1,34 +1,40 @@
-# requirements.txt (由 conda environment.yml 转换)
+# requirements.txt (纯pip安装版)
 
 ### 核心依赖 ###
-# --- 必须通过 conda 安装的包 (系统级依赖) ---
-# 需先执行: conda install faiss-cpu numpy=1.23.5 pytorch=2.6.0
+torch==2.6.0 --extra-index-url https://download.pytorch.org/whl/cpu  # 替代conda的pytorch
+faiss-cpu==1.7.4  # 替代conda的faiss-cpu（需系统OpenBLAS）
 
-### 纯Python包 (可通过pip安装) ###
-# --- 文件处理 ---
-lxml==5.3.1
-pymupdf==1.25.3
-python-docx==1.1.2
+### 数值计算 ###
+numpy==1.23.5
+scipy==1.15.2
+pandas==2.2.3
 
-# --- NLP/深度学习 ---
+### NLP处理 ###
 sentence-transformers==3.4.1
 transformers==4.49.0
 tokenizers==0.21.0
 datasets==2.14.4
+nltk==3.9.1
+jieba==0.42.1
 
-# --- Web服务 ---
+### 文件处理 ###
+python-docx==1.1.2
+pymupdf==1.25.3  # 需要系统mupdf库
+pdfminer.six==20240706
+openpyxl==3.1.5
+lxml==5.3.1
+Pillow==11.1.0  # 替代conda的pillow
+
+### Web服务 ###
 fastapi==0.95.1
 uvicorn==0.22.0
 starlette==0.26.1
+pydantic==1.10.2
 
-# --- 其他工具 ---
+### 其他工具 ###
 openai==0.27.0
 python-dotenv==0.21.1
-pandas==2.2.3
-numpy==1.23.5
-
-### 安装说明 ###
-# 1. 先安装conda依赖:
-#    conda install faiss-cpu pytorch=2.6.0 numpy=1.23.5
-# 2. 再安装pip包:
-#    pip install -r requirements.txt
+wandb==0.18.7
+tqdm==4.67.1
+requests==2.32.3
+typing-extensions==4.12.2
