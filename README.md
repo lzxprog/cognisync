@@ -4,12 +4,13 @@
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.68.0-green)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-基于RAG的文档理解与智能问答系统，实现跨文档语义检索和自然语言交互。
+基于RAG的增强文档理解与智能问答系统，实现跨文档语义检索和自然语言交互。
+可用于搭建完全属于你个人的本地知识库！！！！
 
 ## ✨ 核心功能
 
 - **多格式解析**：支持 PDF/DOCX/TXT 等常见文档格式
-- **语义检索**：FAISS 向量数据库实现毫秒级语义搜索
+- **语义检索**：基于FAISS 向量数据库实现关键词搜索，能够智能检索最贴合你的问题的文档
 - **智能问答**：DeepSeek 大模型驱动上下文感知问答
 - **增量学习**：动态更新知识库无需全量重建
 - **中文优化**：专为中文场景设计的文本预处理流程
@@ -35,4 +36,4 @@
 git clone https://github.com/yourusername/cognisync.git
 
 # 安装依赖
-pip install -r requirements.txt
+推荐使用conda 创建虚拟环境
