@@ -5,6 +5,7 @@ import numpy as np
 import os
 import jieba
 
+from config import MAX_FILE_SIZE
 from utils.faiss_utils import load_faiss_index
 from utils.mapping_utils import load_mappings
 from utils.sentence_model import get_model, encode_text
@@ -16,7 +17,7 @@ router = APIRouter()
 
 
 @router.post("/query")
-async def query(query: str,openApiKey:str, k: int = 20):
+async def query(query: str,openApiKey:str, k: int = 5):
     try:
         # 将问题直接解析为相关联得关键词
         keyword = call_llm_query(query,openApiKey)
@@ -35,8 +36,8 @@ async def query(query: str,openApiKey:str, k: int = 20):
 
         valid_docs = _filter_results(indices[0], distances[0], k, file_id_map, file_path_map)
         documents_content = _load_documents_content(valid_docs)
-        # answer = call_llm(query, documents_content[:MAX_FILE_SIZE],openApiKey) if documents_content else "No relevant documents found."
-        answer =  ""
+        answer = call_llm(query, documents_content[:MAX_FILE_SIZE],openApiKey) if documents_content else "No relevant documents found."
+        # answer =  ""
 
         return {
             "answer": answer,

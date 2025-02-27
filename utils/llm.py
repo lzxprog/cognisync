@@ -18,7 +18,7 @@ def call_llm_query(query: str, openApiKey:str) -> str:
     try:
         custom_messages = [
             {
-                "role": "professor",
+                "role": "system",
                 "content": (
                     "你是一名电力系统、电力市场研究专家，请将我提出的问题解析为二十个关键词。"
                     "遵循以下规则：\n"
@@ -28,7 +28,7 @@ def call_llm_query(query: str, openApiKey:str) -> str:
                     "4. 仅返回关键词"
                 )
             },
-            {"role": "student", "content": f"Question: {query}"}
+            {"role": "user", "content": f"Question: {query}"}
         ]
 
         # 调用 OpenAI API 生成回答
@@ -36,7 +36,7 @@ def call_llm_query(query: str, openApiKey:str) -> str:
             model="deepseek-chat",  # 使用传入的模型名称
             messages=custom_messages,  # 使用自定义的消息
             temperature=0.6,  # 设置生成文本的随机性
-            max_tokens=128  # 设置回答的最大长度
+            max_tokens=512  # 设置回答的最大长度
         )
 
         # 检查响应
@@ -59,7 +59,7 @@ def call_llm(query: str, relevant_doc_content: str,openApiKey:str) -> str:
     try:
         custom_messages = [
             {
-                "role": "professor",
+                "role": "system",
                 "content": (
                     "你是一名电力系统、电力市场研究专家，请严格根据提供的文档内容回答问题。"
                     "遵循以下规则：\n"
@@ -70,8 +70,8 @@ def call_llm(query: str, relevant_doc_content: str,openApiKey:str) -> str:
                     "5. 保持保证学术、专业、数据支撑"
                 )
             },
-            {"role": "student", "content": f"Document: {relevant_doc_content}"},
-            {"role": "student", "content": f"Question: {query}"}
+            {"role": "user", "content": f"Document: {relevant_doc_content}"},
+            {"role": "user", "content": f"Question: {query}"}
         ]
 
         # 调用 OpenAI API 生成回答
