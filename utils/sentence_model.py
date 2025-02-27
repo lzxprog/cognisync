@@ -1,8 +1,7 @@
 from sentence_transformers import SentenceTransformer
 
-# 本地模型路径
-LOCAL_MODEL_PATH = './local_model'
-MODEL_NAME = 'paraphrase-multilingual-MiniLM-L12-v2'  # 更新为你想使用的多语言模型
+from config import LOCAL_MODEL_PATH, MODEL_NAME
+
 
 # 加载模型并缓存到本地
 def load_model(local_model_path=LOCAL_MODEL_PATH):
