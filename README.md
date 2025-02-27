@@ -1,10 +1,10 @@
-# CogniSync - 智能文档问答系统
+# CogniSync - 基于RAG增强智能文档问答系统
 
 ![Python Version](https://img.shields.io/badge/python-3.9%2B-blue)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.68.0-green)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-基于深度学习的文档理解与智能问答系统，实现跨文档语义检索和自然语言交互。
+基于RAG的文档理解与智能问答系统，实现跨文档语义检索和自然语言交互。
 
 ## ✨ 核心功能
 
